@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
     "encoding/json"
-    "io/ioutil"
+	"net/http"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 //task struct
@@ -16,88 +16,57 @@ type Task struct {
     Status string `json:"status"`
 }
 
+
 //slice used to store the tasks (à voir car pas de persistance des données à l'étape 1)
 var tasks []Task
 
-func homePage(w http.ResponseWriter, r *http.Request){
-    fmt.Fprintf(w, "Benvenue sur la page d'accueil !")
-    fmt.Println("Endpoint Hit: homePage")
-}
-
-func handleRequests() {
-    http.HandleFunc("/", homePage)
-    http.HandleFunc("/tasks", getAllTasks)
-    http.HandleFunc("/task", createTask)
-    log.Fatal(http.ListenAndServe("localhost:8080", nil))
-}
-
 //handlers
-func getAllTasks(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("Endpoint Hit: getAllTasks")
-    json.NewEncoder(w).Encode(tasks)
-}
+func handleRequests() {
+    r := chi.NewRouter() //creation of the routeur
 
-func createTask(w http.ResponseWriter, r *http.Request) {
-    reqBody, err := ioutil.ReadAll(r.Body)
-    if err != nil {
-        log.Fatalln(err)
-    }
-    fmt.Println("Endpoint Hit: createTask")
-    fmt.Fprintf(w, "%v", string(reqBody))
+    r.Use(middleware.Logger)
 
-    var t Task 
-    err = json.NewDecoder(r.Body).Decode(&t)
-    if err !=nil {
-        fmt.Println(err)
-        return
-    }
-    tasks = append(tasks, t)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) { //declare new routes to which we pass http handlers
+		w.Write([]byte("home page"))
+        fmt.Println("Endpoint Hit: homePage")
+	})
 
-    json.NewEncoder(w).Encode(t)
-}
+    //= getAllTasks
+    r.Get("/tasks", func(w http.ResponseWriter, r *http.Request) { //voir quel endpoint mettre
+        json.NewEncoder(w).Encode(tasks) //we use the writer and write the "items"
+        fmt.Println("Endpoint Hit: getAllTasks")
+    })
 
-func updateTask(w http.ResponseWriter, r *http.Request) {
-    var t Task 
-    err := json.NewDecoder(r.Body).Decode(&t)
-    if err !=nil {
-        fmt.Println(err)
-        return
-    }
-    for _, taskk := range tasks {
-        if taskk.ID == t.ID {
-            taskk = t
+    //= createNewTask
+    r.Post("/tasks", func(w http.ResponseWriter, r *http.Request) {
+        var t Task
+        
+        err := json.NewDecoder(r.Body).Decode(&t)
+        if err !=nil {
+            fmt.Println(err)
+            return
         }
-    }
-    fmt.Println("Endpoint Hit: updateTask")
+        
+        tasks = append(tasks, t)
+
+        w.Write([]byte("Superbe, tâche créée"))
+    })
+
+    //update an existing task
+    r.Put("/tasks", func(w http.ResponseWriter, r *http.Request)
+
+    http.ListenAndServe("localhost:8080", r)
 }
 
-func deleteTask(w http.ResponseWriter, r *http.Request) {
-    var t Task 
-    err := json.NewDecoder(r.Body).Decode(&t) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t 
-    if err !=nil {
-        fmt.Println(err)
-        return
-    }
-    for index, taskk := range tasks {
-        if taskk.ID == t.ID {  
-            tasks = append(tasks[:index], tasks[index+1:]...) //we delete the task 
-        }
-    }
-    fmt.Println("Endpoint Hit: deleteTask")
+/* func getAllTasks(w http.ResponseWriter, r *http.Request) {
 }
 
-func internalServerError(w http.ResponseWriter, r *http.Request) {
-    w.WriteHeader(http.StatusInternalServerError)
-    w.Write([]byte("internal server error"))
-}
-
-func notFound(w http.ResponseWriter, r *http.Request) {
-    w.WriteHeader(http.StatusNotFound)
-    w.Write([]byte("not found"))
-}
+//searchTask searches the tasks data for a matching task
+func searchTask(w http.ResponseWriter, r *http.Request) {
+} */
 
 func main() {
-    fmt.Println("Rest API Boris v1.0 ")
+    fmt.Println("Rest API Boris v2.0 ")
 	tasks = []Task{
 		{ID: "1", Description: "Construire une API REST en utilisant uniquement la librairie standard, sans persistance des données", Deadline: "09/02/2022", Status: "Ongoing"},
 		{ID: "2", Description: "Faire évoluer l'API : intégrer le routeur go-chi", Deadline: "09/02/2022", Status: "To do"},
