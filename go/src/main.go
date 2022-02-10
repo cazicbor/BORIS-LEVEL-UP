@@ -46,40 +46,44 @@ func createTask(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, "%v", string(reqBody))
 
     var t Task 
-   err = json.NewDecoder(r.Body).Decode(&t)
-   if err !=nil {
-    fmt.Println(err)
-    return
-   }
-    // json.Unmarshal(reqBody, &t)
-
+    err = json.NewDecoder(r.Body).Decode(&t)
+    if err !=nil {
+        fmt.Println(err)
+        return
+    }
     tasks = append(tasks, t)
 
     json.NewEncoder(w).Encode(t)
-
-    // requestBody, err := json.Marshal(map[string]string)
-    // responseBody := bytes.NewBuffer(postBody)
-
-    //  if err != nil {
-    //     log.Fatalf("Error%v", err)
-    //  }
-    //  defer resp.Body.Close()
-    //  body, err := ioutil.ReadAll(resp.Body)
-     
-    //  if err != nil {
-    //     log.Fatalln(err)
-    //  }
-     
-    //  sb := string(body)
-    //  log.Printf(sb)
 }
 
 func updateTask(w http.ResponseWriter, r *http.Request) {
-
+    var t Task 
+    err := json.NewDecoder(r.Body).Decode(&t)
+    if err !=nil {
+        fmt.Println(err)
+        return
+    }
+    for _, taskk := range tasks {
+        if taskk.ID == t.ID {
+            taskk = t
+        }
+    }
+    fmt.Println("Endpoint Hit: updateTask")
 }
 
 func deleteTask(w http.ResponseWriter, r *http.Request) {
-
+    var t Task 
+    err := json.NewDecoder(r.Body).Decode(&t) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t 
+    if err !=nil {
+        fmt.Println(err)
+        return
+    }
+    for index, taskk := range tasks {
+        if taskk.ID == t.ID {  
+            tasks = append(tasks[:index], tasks[index+1:]...) //we delete the task 
+        }
+    }
+    fmt.Println("Endpoint Hit: deleteTask")
 }
 
 func internalServerError(w http.ResponseWriter, r *http.Request) {
