@@ -3,9 +3,9 @@ package main
 import (
     "fmt"
     "encoding/json"
+    "log"
 	"net/http"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 //task struct
@@ -16,54 +16,94 @@ type Task struct {
     Status string `json:"status"`
 }
 
-
 //slice used to store the tasks (à voir car pas de persistance des données à l'étape 1)
 var tasks []Task
 
 //handlers
 func handleRequests() {
-    r := chi.NewRouter() //creation of the routeur
+    r := chi.NewRouter() //creation of the router
 
-    r.Use(middleware.Logger)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) { //declare new routes to which we pass http handlers
-		w.Write([]byte("home page"))
+		if r.Method != http.MethodPost {
+            w.WriteHeader(405) //method not allowed
+            return
+        } 
+        w.Write([]byte("home page"))
         fmt.Println("Endpoint Hit: homePage")
+        w.WriteHeader(200)
 	})
 
     //= getAllTasks
     r.Get("/tasks", func(w http.ResponseWriter, r *http.Request) { //voir quel endpoint mettre
-        json.NewEncoder(w).Encode(tasks) //we use the writer and write the "items"
+        if r.Method != http.MethodPost {
+            w.WriteHeader(405) 
+            return
+        } 
+
+        err := json.NewEncoder(w).Encode(tasks) //we use the writer and write the "items"
+        if err != nil {
+            log.Printf("Body encoding error, %v", err)
+		    w.WriteHeader(500) //internal server error 
+		    return
+        }
+
         fmt.Println("Endpoint Hit: getAllTasks")
+        w.Write([]byte("Et voici les tâches"))
+        w.WriteHeader(200) //tout va bien
     })
 
     //= createNewTask
     r.Post("/tasks", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodPost {
+            w.WriteHeader(405) //method not allowed
+            return
+        }
         var t Task
         
         err := json.NewDecoder(r.Body).Decode(&t)
-        if err !=nil {
-            fmt.Println(err)
-            return
+        if err != nil {
+            log.Printf("Body parse error, %v", err)
+		    w.WriteHeader(500) //internal server error (?)
+		    return
         }
-        
         tasks = append(tasks, t)
 
         w.Write([]byte("Superbe, tâche créée"))
+        w.WriteHeader(200)
     })
 
     //update an existing task
-    r.Put("/tasks", func(w http.ResponseWriter, r *http.Request)
+    r.Put("/tasks", func(w http.ResponseWriter, r *http.Request){ //A FAIRE
 
+    })
+
+    //delete existing task
+    r.Delete("/tasks", func(w http.ResponseWriter, r *http.Request) {
+        var t Task 
+        
+        err := json.NewDecoder(r.Body).Decode(&t) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t 
+        
+        if err != nil {
+            log.Printf("Body parse error, %v", err)
+		    w.WriteHeader(400) //bad request
+		    return
+        }
+
+        for index, taskk := range tasks {
+            if taskk.ID == t.ID {  
+                tasks = append(tasks[:index], tasks[index+1:]...) //we delete the task 
+            } else {
+                fmt.Println("id %v not found", taskk.ID)
+            }
+        }
+        w.Write([]byte("Tâche bien supprimée"))
+        w.WriteHeader(200)
+    })
     http.ListenAndServe("localhost:8080", r)
+    
+    //return &Task, nil
 }
-
-/* func getAllTasks(w http.ResponseWriter, r *http.Request) {
-}
-
-//searchTask searches the tasks data for a matching task
-func searchTask(w http.ResponseWriter, r *http.Request) {
-} */
 
 func main() {
     fmt.Println("Rest API Boris v2.0 ")
