@@ -19,44 +19,47 @@ type Task struct {
 //slice used to store the tasks (à voir car pas de persistance des données à l'étape 1)
 var tasks []Task
 
+func index(w http.ResponseWriter, r *http.Request) { //declare new routes to which we pass http handlers
+    if r.Method != http.MethodGet {
+        w.WriteHeader(http.StatusMethodNotAllowed) //method not allowed
+        return
+    } 
+    w.Write([]byte("home page"))
+    fmt.Println("Endpoint Hit: homePage")
+    w.WriteHeader(http.StatusOK)
+}
+
+
 //handlers
 func handleRequests() {
     r := chi.NewRouter() //creation of the router
 
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) { //declare new routes to which we pass http handlers
-		if r.Method != http.MethodPost {
-            w.WriteHeader(405) //method not allowed
-            return
-        } 
-        w.Write([]byte("home page"))
-        fmt.Println("Endpoint Hit: homePage")
-        w.WriteHeader(200)
-	})
+	r.Get("/", index)
 
     //= getAllTasks
     r.Get("/tasks", func(w http.ResponseWriter, r *http.Request) { //voir quel endpoint mettre
-        if r.Method != http.MethodPost {
-            w.WriteHeader(405) 
+        if r.Method != http.MethodGet {
+            w.WriteHeader(http.StatusMethodNotAllowed) 
             return
         } 
 
         err := json.NewEncoder(w).Encode(tasks) //we use the writer and write the "items"
         if err != nil {
             log.Printf("Body encoding error, %v", err)
-		    w.WriteHeader(500) //internal server error 
+		    w.WriteHeader(http.StatusInternalServerError ) //internal server error 
 		    return
         }
 
         fmt.Println("Endpoint Hit: getAllTasks")
         w.Write([]byte("Et voici les tâches"))
-        w.WriteHeader(200) //tout va bien
+        w.WriteHeader(http.StatusOK) //tout va bien
     })
 
     //= createNewTask
     r.Post("/tasks", func(w http.ResponseWriter, r *http.Request) {
         if r.Method != http.MethodPost {
-            w.WriteHeader(405) //method not allowed
+            w.WriteHeader(http.StatusMethodNotAllowed) //method not allowed
             return
         }
         var t Task
@@ -64,13 +67,13 @@ func handleRequests() {
         err := json.NewDecoder(r.Body).Decode(&t)
         if err != nil {
             log.Printf("Body parse error, %v", err)
-		    w.WriteHeader(500) //internal server error (?)
+		    w.WriteHeader(http.StatusInternalServerError  ) //internal server error (?)
 		    return
         }
         tasks = append(tasks, t)
 
         w.Write([]byte("Superbe, tâche créée"))
-        w.WriteHeader(200)
+        w.WriteHeader(http.StatusOK)
     })
 
     //update an existing task
@@ -86,7 +89,7 @@ func handleRequests() {
         
         if err != nil {
             log.Printf("Body parse error, %v", err)
-		    w.WriteHeader(400) //bad request
+		    w.WriteHeader(http.StatusBadRequest) //bad request
 		    return
         }
 
@@ -98,11 +101,9 @@ func handleRequests() {
             }
         }
         w.Write([]byte("Tâche bien supprimée"))
-        w.WriteHeader(200)
+        w.WriteHeader(http.StatusOK)
     })
     http.ListenAndServe("localhost:8080", r)
-    
-    //return &Task, nil
 }
 
 func main() {
