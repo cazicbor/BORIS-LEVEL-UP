@@ -9,6 +9,6 @@ import (
 
 func main() {
 	fmt.Println("Rest API Boris v2.0 ")
-	repository.InitRepo()
+	repository.InitRepo()     //init the repo with data
 	handlers.HandleRequests() //launch handlers
 }
