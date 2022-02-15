@@ -29,6 +29,52 @@ func GetTaskByID(id string) *Task {
 	return nil
 }
 
+func GetAllIDs() map[int]*Task {
+	return Tasks
+}
+
+func AddTaskToDB() *Task {
+	var t Task
+
+	Tasks[len(Tasks)] = &Task{ //we append the repository.Task t to the map
+		ID:          t.ID,
+		Description: t.Description,
+		Deadline:    t.Deadline,
+		Status:      t.Status,
+	}
+	return &t
+}
+
+func UpdateTaskByID() *Task {
+	var t Task
+
+	Tasks[t.ID] = &Task{ //we append the repository.Task t to the map
+		ID:          t.ID,
+		Description: t.Description,
+		Deadline:    t.Deadline,
+		Status:      t.Status,
+	}
+
+	if _, ok := Tasks[t.ID]; !ok {
+		fmt.Println("Task not found")
+		return nil
+	}
+	return &t
+}
+
+func DeleteTaskByID() *Task {
+	var t Task
+
+	for index := range Tasks {
+		if index == t.ID {
+			delete(Tasks, index) //we delete the repository.Task
+		} else {
+			fmt.Printf("id %v not found", t.ID)
+		}
+	}
+	return &t
+}
+
 func InitRepo() {
 	Tasks[1] = &Task{
 		ID:          1,
