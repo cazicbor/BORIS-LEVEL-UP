@@ -1,5 +1,10 @@
 package repository
 
+import (
+	"fmt"
+	"strconv"
+)
+
 //Task struct
 type Task struct {
 	ID          int    `json:"id"`
@@ -10,6 +15,19 @@ type Task struct {
 
 //modification de la structure de données : slice -> map pour pouvoir utiliser la métode Put
 var Tasks = make(map[int]*Task)
+
+func GetTaskByID(id string) *Task {
+	idToInt, err := strconv.Atoi(id)
+	for _, task := range Tasks {
+		if err != nil {
+			fmt.Print(err)
+		}
+		if task.ID == idToInt {
+			return task
+		}
+	}
+	return nil
+}
 
 func InitRepo() {
 	Tasks[1] = &Task{
@@ -36,5 +54,4 @@ func InitRepo() {
 		Deadline:    "10/02/2022",
 		Status:      "To do",
 	}
-
 }

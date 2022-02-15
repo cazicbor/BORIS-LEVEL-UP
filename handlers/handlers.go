@@ -15,7 +15,7 @@ func HandleRequests() {
 	r := chi.NewRouter() //creation of the router
 
 	r.Get("/", Index)
-	r.Get("/task", GetTask)
+	r.Get("/task/{id}", GetTask)
 	r.Get("/tasks", GetAllTasks)
 	r.Post("/task", CreateNewTask)
 	r.Put("/task", UpdateTask)
@@ -29,22 +29,15 @@ func Index(w http.ResponseWriter, r *http.Request) { //declare new routes to whi
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(repository.Tasks) //we use the writer and write the "items"
-	if err != nil {
-		log.Printf("Body encoding error, %v", err)
-		w.WriteHeader(http.StatusInternalServerError) //internal server error
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		fmt.Println("Error")
 		return
 	}
+	json.NewEncoder(w).Encode(repository.GetTaskByID(id))
 
-	for index := range repository.Tasks {
-		if _, ok := repository.Tasks[index]; !ok {
-			fmt.Println(err, "Element not found")
-			return
-		}
-	}
 	fmt.Println("Endpoint Hit: GetTask")
-	w.Write([]byte("Here is the task you're looking for"))
-
+	w.Write([]byte("Here's your task"))
 }
 
 func GetAllTasks(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +82,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := repository.Tasks[t.ID]; !ok {
-		fmt.Println(err, "Element not found")
+		fmt.Println(err, "Task not found")
 		return
 	}
 	repository.Tasks[t.ID] = &repository.Task{ //we append the repository.Task t to the map
