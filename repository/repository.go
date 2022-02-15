@@ -18,13 +18,13 @@ var Tasks = make(map[int]*Task)
 
 func GetTaskByID(id string) *Task {
 	idToInt, err := strconv.Atoi(id)
-	for _, task := range Tasks {
-		if err != nil {
-			fmt.Print(err)
-		}
-		if task.ID == idToInt {
-			return task
-		}
+	if err != nil {
+		fmt.Print(err)
+	}
+	if task, ok := Tasks[idToInt]; ok {
+		return task
+	} else {
+		fmt.Errorf("ID %v not existing", idToInt)
 	}
 	return nil
 }
