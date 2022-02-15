@@ -16,21 +16,19 @@ type Task struct {
 //modification de la structure de données : slice -> map pour pouvoir utiliser la métode Put
 var Tasks = make(map[int]*Task)
 
-func GetTaskByID(id string) *Task {
+func GetAllIDs() map[int]*Task {
+	return Tasks
+}
+
+func GetTaskByID(id string) (*Task, error) {
 	idToInt, err := strconv.Atoi(id)
 	if err != nil {
 		fmt.Print(err)
 	}
-	if task, ok := Tasks[idToInt]; ok {
-		return task
-	} else {
-		fmt.Errorf("ID %v not existing", idToInt)
+	if _, ok := Tasks[idToInt]; !ok {
+		return nil, fmt.Errorf("IDs not matching")
 	}
-	return nil
-}
-
-func GetAllIDs() map[int]*Task {
-	return Tasks
+	return Tasks[idToInt], nil
 }
 
 func AddTaskToDB() *Task {
