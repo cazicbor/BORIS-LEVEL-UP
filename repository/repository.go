@@ -36,7 +36,7 @@ func GetAllIDs() map[int]*Task {
 func AddTaskToDB() *Task {
 	var t Task
 
-	Tasks[len(Tasks)] = &Task{ //we append the repository.Task t to the map
+	Tasks[len(Tasks)] = &Task{ //we append the Task t to the map
 		ID:          t.ID,
 		Description: t.Description,
 		Deadline:    t.Deadline,
@@ -48,7 +48,7 @@ func AddTaskToDB() *Task {
 func UpdateTaskByID() *Task {
 	var t Task
 
-	Tasks[t.ID] = &Task{ //we append the repository.Task t to the map
+	Tasks[t.ID] = &Task{
 		ID:          t.ID,
 		Description: t.Description,
 		Deadline:    t.Deadline,
@@ -67,7 +67,7 @@ func DeleteTaskByID() *Task {
 
 	for index := range Tasks {
 		if index == t.ID {
-			delete(Tasks, index) //we delete the repository.Task
+			delete(Tasks, index) //we delete the Task
 		} else {
 			fmt.Printf("id %v not found", t.ID)
 		}

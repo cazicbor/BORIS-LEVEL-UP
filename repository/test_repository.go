@@ -5,10 +5,9 @@ import (
 	"testing"
 )
 
-func TestGetTaskByID(t *testing.T) {
+var MockTasks = make(map[int]*Task)
 
-	var MockTasks = make(map[int]*Task)
-
+func InitMockTasks() {
 	MockTasks[1] = &Task{
 		ID:          1,
 		Description: "Construire une API REST en utilisant uniquement la librairie standard, sans persistance des données",
@@ -33,7 +32,9 @@ func TestGetTaskByID(t *testing.T) {
 		Deadline:    "10/02/2022",
 		Status:      "To do",
 	}
+}
 
+func TestGetTaskByID(t *testing.T) {
 	for _, mocktask := range MockTasks {
 		res := GetTaskByID(strconv.Itoa(mocktask.ID))
 		if res != mocktask {
@@ -43,5 +44,24 @@ func TestGetTaskByID(t *testing.T) {
 }
 
 func TestAddTaskToDB(t *testing.T) {
+	var newMockTask *Task
+	MockTasks[newMockTask.ID] = &Task{
+		ID:          newMockTask.ID,
+		Description: newMockTask.Description,
+		Deadline:    newMockTask.Deadline,
+		Status:      newMockTask.Status,
+	}
+
+	res := AddTaskToDB()
+	if res != newMockTask {
+		t.Errorf("Error in creating a new task, got: %v, want: %v", res, newMockTask)
+	}
+}
+
+func TestUpdateTaskByID() {
+
+}
+
+func TestDeleteTaskByID() {
 
 }
