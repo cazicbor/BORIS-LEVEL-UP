@@ -53,15 +53,20 @@ func TestAddTaskToDB(t *testing.T) {
 	}
 
 	res := AddTaskToDB()
-	if res != newMockTask {
+	if res != newMockTask { //we compare both results
 		t.Errorf("Error in creating a new task, got: %v, want: %v", res, newMockTask)
 	}
 }
 
-func TestUpdateTaskByID() {
+func TestUpdateTaskByID(t *testing.T) {
 
 }
 
-func TestDeleteTaskByID() {
-
+func TestDeleteTaskByID(t *testing.T) {
+	deletedTask := DeleteTaskByID()
+	for _, mockTask := range MockTasks {
+		if deletedTask.ID == mockTask.ID {
+			t.Errorf("Error in deleting the task %v", deletedTask.ID)
+		}
+	}
 }
