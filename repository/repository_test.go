@@ -12,11 +12,19 @@ func TestInitRepo(t *testing.T) {
 	assert.Equal(t, 1, tasks.indice, "The two lenghts should be equal")
 }
 
+func TestGetRepository(t *testing.T) {
+	InitRepo()
+	res := GetRepository()
+	assert.NotNil(t, res)
+	assert.Equal(t, tasks, res)
+}
+
 func TestGetAllIDs(t *testing.T) {
 	InitRepo()
 	res := GetRepository().GetAllIDs()
 	assert.NotNil(t, res)
-	assert.Equal(t, tasks, res, "The two maps should be equal")
+
+	//assert.Equal(t, tasks, res)
 }
 
 func TestGetTaskByID(t *testing.T) {

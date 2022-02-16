@@ -39,7 +39,7 @@ func GetRepository() *localTasks { //méthode permettant d'accéder aux tâches 
 }
 
 func (repo *localTasks) GetAllIDs() []*model.Task { //(repo *localTasks) signifie qu'on travaille avec la structure de données localTasks
-	var sliceTasks []*model.Task
+	var sliceTasks []*model.Task //slice in which we store the tasks which are in the db
 	for _, task := range repo.db {
 		sliceTasks = append(sliceTasks, task)
 	}
