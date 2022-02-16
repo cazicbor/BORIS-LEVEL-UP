@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
 	"github.com/go-chi/chi"
@@ -34,9 +35,13 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error")
 		return
 	}
-	json.NewEncoder(w).Encode(repository.GetTaskByID(id))
+	task, err := repository.GetTaskByID(strconv.Atoi(id))
+	if err != nil {
+		fmt.Println(err)
+	}
+	json.NewEncoder(w).Encode(task)
 
-	fmt.Println("Endpoint Hit: GetTask")
+	fmt.Println("Endpoint Hit: GetTaskx")
 	w.Write([]byte("Here's your task"))
 }
 
@@ -53,19 +58,30 @@ func GetAllTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateNewTask(w http.ResponseWriter, r *http.Request) {
-	err := json.NewDecoder(r.Body).Decode(repository.AddTaskToDB())
+
+	var t *repository.Task
+
+	err := json.NewDecoder(r.Body).Decode(&t)
 	if err != nil {
 		log.Printf("Body encoding error, %v", err)
-		w.WriteHeader(http.StatusInternalServerError) //internal server error
+		w.WriteHeader(http.StatusBadRequest) //internal server error
 		return
 	}
 
+	_, err = repository.AddTaskToDB(t)
+	if err != nil {
+
+	}
+
 	fmt.Println("Endpoint Hit: CreateNewTask")
+
 	w.Write([]byte("Great, new task created"))
 }
 
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
-	err := json.NewDecoder(r.Body).Decode(repository.UpdateTaskByID())
+	var t *repository.Task
+	newtask, _ := repository.UpdateTaskByID(t)
+	err := json.NewDecoder(r.Body).Decode(newtask)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -75,8 +91,9 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
-
-	err := json.NewDecoder(r.Body).Decode(repository.DeleteTaskByID()) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t
+	var t *repository.Task
+	newtask, _ := repository.DeleteTaskByID(t)
+	err := json.NewDecoder(r.Body).Decode(newtask) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t
 	if err != nil {
 		log.Printf("Body parse error, %v", err)
 		w.WriteHeader(http.StatusBadRequest) //bad request
