@@ -3,63 +3,79 @@ package repository
 import (
 	"errors"
 	"fmt"
+
+	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 )
 
-var id int
+// type RepositoryProvider interface {
+// 	GetAllIDs() []*model.Task
+// 	GetTaskByID(id int, err error) (*Task, error)
+// 	AddTaskToDB(t *Task) (*Task, error)
+// 	UpdateTaskByID(t *Task) (*Task, error)
+// 	DeleteTaskByID(id int) error
+// }
 
-//Task struct
-type Task struct {
-	ID          int    `json:"id"`
-	Description string `json:"description"`
-	Deadline    string `json:"deadline"`
-	Status      string `json:"status"`
-}
-
-var (
+var ( //custom errors
 	ErrNotFound = errors.New("ID not found")
+	//...
 )
 
-//modification de la structure de données : slice -> map pour pouvoir utiliser la métode Put
-var Tasks = make(map[int]*Task)
+var tasks *localTasks //singleton : une seule instanciation de cette structure, interne au package, qu'on transmet à l'extérieur via GetRepository()
+
+type localTasks struct { //strcuture locale au package repository dans laquelle on stocke les tâches
+	db     map[int]*model.Task
+	indice int
+}
 
 func InitRepo() {
-	id = 1
-}
-
-func GetAllIDs() map[int]*Task {
-	return Tasks
-}
-
-func GetTaskByID(id int, err error) (*Task, error) {
-	if _, ok := Tasks[id]; !ok {
-		return nil, fmt.Errorf("IDs not matching")
+	tasks = &localTasks{
+		db:     make(map[int]*model.Task),
+		indice: 1,
 	}
-	return Tasks[id], nil
 }
 
-func AddTaskToDB(t *Task) (*Task, error) {
-	Tasks[id] = &Task{ //we append the Task t to the map
-		ID:          id,
+func GetRepository() *localTasks { //méthode permettant d'accéder aux tâches via l'extérieur (getter)
+	return tasks
+}
+
+func (repo *localTasks) GetAllIDs() []*model.Task { //(repo *localTasks) signifie qu'on travaille avec la structure de données localTasks
+	var sliceTasks []*model.Task
+	for _, task := range repo.db {
+		sliceTasks = append(sliceTasks, task)
+	}
+	return sliceTasks
+}
+
+func (repo *localTasks) GetTaskByID(id int, err error) (*model.Task, error) {
+	if _, ok := tasks.db[id]; !ok {
+		return nil, fmt.Errorf("ID not found")
+	}
+	return tasks.db[id], nil
+}
+
+func (repo *localTasks) AddTaskToDB(t *model.Task) (*model.Task, error) {
+	tasks.db[tasks.indice] = &model.Task{ //we append the Task t to the map
+		ID:          tasks.indice,
 		Description: t.Description,
 		Deadline:    t.Deadline,
 		Status:      t.Status,
 	}
-	id++
+	tasks.indice++
 	return t, nil
 }
 
-func UpdateTaskByID(t *Task) (*Task, error) {
-	if _, ok := Tasks[t.ID]; !ok {
+func (repo *localTasks) UpdateTaskByID(t *model.Task) (*model.Task, error) {
+	if _, ok := tasks.db[t.ID]; !ok {
 		return nil, ErrNotFound
 	}
-	Tasks[t.ID] = t
-	return Tasks[id], nil
+	tasks.db[t.ID] = t
+	return t, nil
 }
 
-func DeleteTaskByID(id int) error {
-	if _, ok := Tasks[id]; !ok {
+func (repo *localTasks) DeleteTaskByID(id int) error {
+	if _, ok := tasks.db[id]; !ok {
 		return ErrNotFound
 	}
-	delete(Tasks, id)
+	delete(tasks.db, id)
 	return nil
 }

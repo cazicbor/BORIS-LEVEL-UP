@@ -3,36 +3,37 @@ package repository
 import (
 	"testing"
 
+	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInitRepo(t *testing.T) {
 	InitRepo()
-	assert.Equal(t, 1, id, "The two lenghts should be equal")
+	assert.Equal(t, 1, tasks.indice, "The two lenghts should be equal")
 }
 
 func TestGetAllIDs(t *testing.T) {
 	InitRepo()
-	res := GetAllIDs()
+	res := GetRepository().GetAllIDs()
 	assert.NotNil(t, res)
-	assert.Equal(t, Tasks, res, "The two maps should be equal")
+	assert.Equal(t, tasks, res, "The two maps should be equal")
 }
 
 func TestGetTaskByID(t *testing.T) {
 	var err error
-	testTask := &Task{
+	testTask := &model.Task{
 		ID:          1,
 		Description: "Construire une API REST en utilisant uniquement la librairie standard, sans persistance des données",
 		Deadline:    "09/02/2022",
 		Status:      "Ongoing",
 	}
-	Tasks[testTask.ID] = testTask
+	tasks.db[testTask.ID] = testTask
 
-	res, err := GetTaskByID(testTask.ID, err)
+	res, err := GetRepository().GetTaskByID(testTask.ID, err)
 	assert.Nil(t, err)
 	assert.Equal(t, testTask, res, "The two IDs should be the same.")
 
-	res, err = GetTaskByID(66, err)
+	res, err = GetRepository().GetTaskByID(66, err)
 	assert.Nil(t, res)
 	assert.NotNil(t, err)
 
@@ -40,15 +41,15 @@ func TestGetTaskByID(t *testing.T) {
 
 func TestAddTaskToDB(t *testing.T) {
 	InitRepo()
-	testTask := &Task{
+	testTask := &model.Task{
 		ID:          5,
 		Description: "de toute manière je serai bientôt au chômage",
 		Deadline:    "16/02/2022",
 		Status:      "TO DO",
 	}
-	Tasks[testTask.ID] = testTask
+	tasks.db[testTask.ID] = testTask
 
-	res, err := AddTaskToDB(testTask)
+	res, err := GetRepository().AddTaskToDB(testTask)
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	assert.Equal(t, testTask, res, "The two tasks should be the same")
@@ -56,28 +57,28 @@ func TestAddTaskToDB(t *testing.T) {
 
 func TestUpdateTaskByID(t *testing.T) {
 	InitRepo()
-	testTask := &Task{
-		ID:          id,
+	testTask := &model.Task{
+		ID:          tasks.indice,
 		Description: "Construire une API REST en utilisant uniquement la librairie standard, sans persistance des données",
 		Deadline:    "09/02/2022",
 		Status:      "Ongoing",
 	}
 
-	Tasks[id] = testTask
+	tasks.db[tasks.indice] = testTask
 
-	updatedTask := &Task{
-		ID:          id,
+	updatedTask := &model.Task{
+		ID:          tasks.indice,
 		Description: "nouveau blabla",
 		Deadline:    "09/02/2022",
 		Status:      "Ongoing",
 	}
 
-	res, err := UpdateTaskByID(Tasks[id])
+	res, err := GetRepository().UpdateTaskByID(tasks.db[tasks.indice])
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
 	assert.Equal(t, updatedTask, res, "The two tasks should be the same")
 
-	res, err = UpdateTaskByID(Tasks[24])
+	res, err = GetRepository().UpdateTaskByID(tasks.db[24])
 	assert.NotNil(t, err)
 	assert.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, res)
@@ -86,19 +87,19 @@ func TestUpdateTaskByID(t *testing.T) {
 
 func TestDeleteTaskByID(t *testing.T) {
 	InitRepo()
-	testTask := &Task{
+	testTask := &model.Task{
 		ID:          1,
 		Description: "Construire une API REST en utilisant uniquement la librairie standard, sans persistance des données",
 		Deadline:    "09/02/2022",
 		Status:      "Ongoing",
 	}
-	Tasks[testTask.ID] = testTask
+	tasks.db[testTask.ID] = testTask
 
-	err := DeleteTaskByID(1)
+	err := GetRepository().DeleteTaskByID(1)
 	assert.Nil(t, err)
-	assert.Equal(t, 0, len(Tasks))
+	assert.Equal(t, 0, len(tasks.db))
 
-	err = DeleteTaskByID(7)
+	err = GetRepository().DeleteTaskByID(7)
 	assert.NotNil(t, err)
 	assert.ErrorIs(t, err, ErrNotFound)
 }

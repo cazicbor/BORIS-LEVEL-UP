@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
 	"github.com/go-chi/chi"
 )
@@ -35,7 +36,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error")
 		return
 	}
-	task, err := repository.GetTaskByID(strconv.Atoi(id))
+	task, err := repository.GetRepository().GetTaskByID(strconv.Atoi(id))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,7 +47,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllTasks(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(repository.GetAllIDs()) //we use the writer and write the "items"
+	err := json.NewEncoder(w).Encode(repository.GetRepository().GetAllIDs()) //we use the writer and write the "items"
 	if err != nil {
 		log.Printf("Body encoding error, %v", err)
 		w.WriteHeader(http.StatusInternalServerError) //internal server error
@@ -59,7 +60,7 @@ func GetAllTasks(w http.ResponseWriter, r *http.Request) {
 
 func CreateNewTask(w http.ResponseWriter, r *http.Request) {
 
-	var t *repository.Task
+	var t *model.Task
 
 	err := json.NewDecoder(r.Body).Decode(&t)
 	if err != nil {
@@ -68,7 +69,7 @@ func CreateNewTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = repository.AddTaskToDB(t)
+	_, err = repository.GetRepository().AddTaskToDB(t)
 	if err != nil {
 		log.Printf("Body encoding error, %v", err)
 		w.WriteHeader(http.StatusBadRequest) //internal server error
@@ -80,13 +81,13 @@ func CreateNewTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
-	var t repository.Task
+	var t model.Task
 	err := json.NewDecoder(r.Body).Decode(&t)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	_, err = repository.UpdateTaskByID(&t)
+	_, err = repository.GetRepository().UpdateTaskByID(&t)
 	if err == repository.ErrNotFound {
 		w.WriteHeader((http.StatusBadRequest))
 		return
@@ -100,13 +101,13 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
-	var t repository.Task
+	var t model.Task
 	err := json.NewDecoder(r.Body).Decode(&t) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = repository.DeleteTaskByID(t.ID)
+	err = repository.GetRepository().DeleteTaskByID(t.ID)
 	if err == repository.ErrNotFound {
 		w.WriteHeader((http.StatusBadRequest))
 		return
