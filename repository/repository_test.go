@@ -72,14 +72,12 @@ func TestUpdateTaskByID(t *testing.T) {
 		Status:      "Ongoing",
 	}
 
-	res, err := UpdateTaskByID(updatedTask)
+	res, err := UpdateTaskByID(Tasks[id])
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
 	assert.Equal(t, updatedTask, res, "The two tasks should be the same")
 
-	res, err = UpdateTaskByID(&Task{
-		ID: 24,
-	})
+	res, err = UpdateTaskByID(Tasks[24])
 	assert.NotNil(t, err)
 	assert.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, res)

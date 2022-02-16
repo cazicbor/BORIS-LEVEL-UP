@@ -53,7 +53,7 @@ func UpdateTaskByID(t *Task) (*Task, error) {
 		return nil, ErrNotFound
 	}
 	Tasks[t.ID] = t
-	return t, nil
+	return Tasks[id], nil
 }
 
 func DeleteTaskByID(id int) error {
