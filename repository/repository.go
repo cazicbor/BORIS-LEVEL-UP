@@ -73,7 +73,7 @@ func DeleteTaskByID() *Task {
 	return &t
 }
 
-func InitRepo() {
+func InitRepo() map[int]*Task {
 	Tasks[1] = &Task{
 		ID:          1,
 		Description: "Construire une API REST en utilisant uniquement la librairie standard, sans persistance des données",
@@ -98,4 +98,5 @@ func InitRepo() {
 		Deadline:    "10/02/2022",
 		Status:      "To do",
 	}
+	return Tasks
 }
