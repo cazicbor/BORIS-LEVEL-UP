@@ -36,7 +36,8 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error")
 		return
 	}
-	task, err := repository.GetRepository().GetTaskByID(strconv.Atoi(id))
+	idToInt, _ := strconv.Atoi(id)
+	task, err := repository.GetRepository().GetTaskByID(idToInt)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -47,7 +48,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllTasks(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(repository.GetRepository().GetAllIDs()) //we use the writer and write the "items"
+	err := json.NewEncoder(w).Encode(repository.GetRepository().GetAllTasksByID()) //we use the writer and write the "items"
 	if err != nil {
 		log.Printf("Body encoding error, %v", err)
 		w.WriteHeader(http.StatusInternalServerError) //internal server error
