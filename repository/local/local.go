@@ -9,17 +9,17 @@ import (
 
 var tasks *localTasks //singleton : une seule instanciation de cette structure, interne au package, qu'on transmet à l'extérieur via GetRepository()
 
-type Indice int
+type indice int
 
 type localTasks struct { //strcuture locale au package repository dans laquelle on stocke les tâches
-	db     map[Indice]*model.Task
-	Indice int
+	db     map[indice]*model.Task
+	indice int
 }
 
 func InitLocalRepo() *localTasks {
 	tasks = &localTasks{
-		db:     make(map[Indice]*model.Task),
-		Indice: 1,
+		db:     make(map[indice]*model.Task),
+		indice: 1,
 	}
 	return tasks
 }
@@ -37,36 +37,36 @@ func (repo *localTasks) GetAllTasksByID() []*model.Task { //(repo *localTasks) s
 }
 
 func (repo *localTasks) GetTaskByID(id int) (*model.Task, error) {
-	i := Indice(id)
+	i := indice(id)
 	if _, ok := tasks.db[i]; !ok {
 		return nil, fmt.Errorf("ID not found")
 	}
-	return tasks.db[Indice(id)], nil
+	return tasks.db[indice(id)], nil
 }
 
 func (repo *localTasks) AddTaskToDB(t *model.Task) (*model.Task, error) {
-	tasks.db[Indice(tasks.Indice)] = &model.Task{ //we append the model.Task t to the map
-		ID:          tasks.Indice,
+	tasks.db[indice(tasks.indice)] = &model.Task{ //we append the model.Task t to the map
+		ID:          tasks.indice,
 		Description: t.Description,
 		Deadline:    t.Deadline,
 		Status:      t.Status,
 	}
-	tasks.Indice++
+	tasks.indice++
 	return t, nil
 }
 
 func (repo *localTasks) UpdateTaskByID(t *model.Task) (*model.Task, error) {
-	if _, ok := tasks.db[Indice(t.ID)]; !ok {
+	if _, ok := tasks.db[indice(t.ID)]; !ok {
 		return nil, repository.ErrNotFound
 	}
-	tasks.db[Indice(t.ID)] = t
+	tasks.db[indice(t.ID)] = t
 	return t, nil
 }
 
 func (repo *localTasks) DeleteTaskByID(id int) error {
-	if _, ok := tasks.db[Indice(id)]; !ok {
+	if _, ok := tasks.db[indice(id)]; !ok {
 		return repository.ErrNotFound
 	}
-	delete(tasks.db, Indice(id))
+	delete(tasks.db, indice(id))
 	return nil
 }

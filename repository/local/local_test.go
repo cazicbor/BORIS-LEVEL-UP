@@ -12,14 +12,14 @@ func TestInitRepo(t *testing.T) {
 
 	InitLocalRepo()
 
-	assert.Equal(t, 1, tasks.Indice, "The two lenghts should be equal")
+	assert.Equal(t, 1, tasks.indice, "The two lenghts should be equal")
 }
 
 func TestGetRepository(t *testing.T) {
 
 	testTasks := &localTasks{
-		db:     make(map[Indice]*model.Task),
-		Indice: 1,
+		db:     make(map[indice]*model.Task),
+		indice: 1,
 	}
 	tasks = testTasks
 
@@ -33,7 +33,7 @@ func TestGetAllTasks(t *testing.T) {
 
 	var sliceTestTasks []*model.Task
 
-	maptasks := map[Indice]*model.Task{ //map that we build for testing with test data
+	maptasks := map[indice]*model.Task{ //map that we build for testing with test data
 		1: &model.Task{
 			ID:          1,
 			Description: "test1",
@@ -43,7 +43,7 @@ func TestGetAllTasks(t *testing.T) {
 	}
 	testTasks := &localTasks{
 		db:     maptasks,
-		Indice: 1,
+		indice: 1,
 	}
 	tasks = testTasks
 
@@ -61,7 +61,7 @@ func TestGetTaskByID(t *testing.T) {
 
 	var err error
 
-	maptasks := map[Indice]*model.Task{ //map that we build for testing with test data
+	maptasks := map[indice]*model.Task{ //map that we build for testing with test data
 		1: &model.Task{
 			ID:          1,
 			Description: "test1",
@@ -71,14 +71,14 @@ func TestGetTaskByID(t *testing.T) {
 	}
 	testTasks := &localTasks{
 		db:     maptasks,
-		Indice: 1,
+		indice: 1,
 	}
 	tasks = testTasks
 
-	tasks.db[Indice(testTasks.Indice)] = maptasks[Indice(testTasks.Indice)]
-	test := maptasks[Indice(testTasks.Indice)]
+	tasks.db[indice(testTasks.indice)] = maptasks[indice(testTasks.indice)]
+	test := maptasks[indice(testTasks.indice)]
 
-	res, err := GetRepository().GetTaskByID(testTasks.Indice)
+	res, err := GetRepository().GetTaskByID(testTasks.indice)
 	assert.Nil(t, err)
 	assert.Equal(t, test, res, "The two tasks should be the same.")
 
@@ -91,7 +91,7 @@ func TestGetTaskByID(t *testing.T) {
 
 func TestAddTaskToDB(t *testing.T) {
 
-	maptasks := map[Indice]*model.Task{ //map that we build for testing with test data
+	maptasks := map[indice]*model.Task{ //map that we build for testing with test data
 		1: &model.Task{
 			ID:          1,
 			Description: "test1",
@@ -101,14 +101,14 @@ func TestAddTaskToDB(t *testing.T) {
 	}
 	testTasks := &localTasks{
 		db:     maptasks,
-		Indice: 1,
+		indice: 1,
 	}
 	tasks = testTasks
 
-	//tasks.db[Indice(testTasks.Indice)] = maptasks[Indice(testTasks.Indice)]
-	newTask := maptasks[Indice(testTasks.Indice)]
+	//tasks.db[indice(testTasks.indice)] = maptasks[indice(testTasks.indice)]
+	newTask := maptasks[indice(testTasks.indice)]
 
-	res, err := GetRepository().AddTaskToDB(maptasks[Indice(testTasks.Indice)])
+	res, err := GetRepository().AddTaskToDB(maptasks[indice(testTasks.indice)])
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	assert.Equal(t, newTask, res, "The two tasks should be the same")
@@ -116,7 +116,7 @@ func TestAddTaskToDB(t *testing.T) {
 
 func TestUpdateTaskByID(t *testing.T) {
 
-	maptasks := map[Indice]*model.Task{ //map that we build for testing with test data
+	maptasks := map[indice]*model.Task{ //map that we build for testing with test data
 		1: &model.Task{
 			ID:          1,
 			Description: "test1",
@@ -126,14 +126,14 @@ func TestUpdateTaskByID(t *testing.T) {
 	}
 	testTasks := &localTasks{
 		db:     maptasks,
-		Indice: 1,
+		indice: 1,
 	}
 	tasks = testTasks
 
-	//tasks.db[Indice(testTasks.Indice)] = maptasks[Indice(testTasks.Indice)]
+	//tasks.db[indice(testTasks.indice)] = maptasks[indice(testTasks.indice)]
 
 	updatedTask := &model.Task{
-		ID:          tasks.Indice,
+		ID:          tasks.indice,
 		Description: "testupdate",
 		Deadline:    "testupdate",
 		Status:      "testupdate",
@@ -153,7 +153,7 @@ func TestUpdateTaskByID(t *testing.T) {
 
 func TestDeleteTaskByID(t *testing.T) {
 
-	maptasks := map[Indice]*model.Task{ //map that we build for testing with test data
+	maptasks := map[indice]*model.Task{ //map that we build for testing with test data
 		1: &model.Task{
 			ID:          1,
 			Description: "test1",
@@ -163,11 +163,11 @@ func TestDeleteTaskByID(t *testing.T) {
 	}
 	testTasks := &localTasks{
 		db:     maptasks,
-		Indice: 1,
+		indice: 1,
 	}
 	tasks = testTasks
 
-	tasks.db[Indice(testTasks.Indice)] = maptasks[Indice(testTasks.Indice)]
+	tasks.db[indice(testTasks.indice)] = maptasks[indice(testTasks.indice)]
 
 	err := GetRepository().DeleteTaskByID(1)
 
