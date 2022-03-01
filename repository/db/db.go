@@ -21,7 +21,7 @@ type MongoHandler struct {
 	database string
 }
 
-//MongoHandler Constructor
+//MongoHandler Constructor, to init the repo
 func NewMongoRepo(address string) *MongoHandler {
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -108,6 +108,7 @@ func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ID not found")
 	}
+
 	t.ID = update.UpsertedID.(int)
 	return t, nil //ici convertir update en *model.Task, COMMENT FAIRE PUTAIN
 }
@@ -116,11 +117,11 @@ func (mh *MongoHandler) DeleteTaskByID(id int) error {
 
 	collection := mh.client.Database(mh.database).Collection(CollectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	filter := bson.M{"id": id}
+	filter := bson.M{"_id": id}
 
 	_, err := collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return fmt.Errorf("Could not delete task : %v", id)
+		return fmt.Errorf("could not delete task : %v", id)
 	}
 
 	return nil
