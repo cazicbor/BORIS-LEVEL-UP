@@ -16,7 +16,7 @@ type localTasks struct { //strcuture locale au package repository dans laquelle 
 	indice int
 }
 
-func InitLocalRepo() *localTasks {
+func InitLocal() *localTasks {
 	tasks = &localTasks{
 		db:     make(map[indice]*model.Task),
 		indice: 1,

@@ -9,19 +9,25 @@ import (
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
+	"github.com/cazicbor/BORIS_LEVEL_UP/repository/db"
 	"github.com/go-chi/chi"
 )
 
+var mh *db.MongoHandler
+
 //handlers
 func HandleRequests() {
+
 	r := chi.NewRouter() //creation of the router
 
-	r.Get("/", Index)
-	r.Get("/task/{id}", GetTask)
-	r.Get("/tasks", GetAllTasks)
-	r.Post("/task", CreateNewTask)
-	r.Put("/task", UpdateTask)
-	r.Delete("/task", DeleteTask)
+	r.Route("/", func(r chi.Router) {
+		r.Get("/", Index)
+		r.Get("/task/{id}", GetTask)
+		r.Get("/tasks", GetAllTasks)
+		r.Post("/task", CreateNewTask)
+		r.Put("/task", UpdateTask)
+		r.Delete("/task", DeleteTask)
+	})
 	http.ListenAndServe("localhost:8080", r)
 }
 
@@ -31,6 +37,7 @@ func Index(w http.ResponseWriter, r *http.Request) { //declare new routes to whi
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
+
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		fmt.Println("Error")
@@ -48,6 +55,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllTasks(w http.ResponseWriter, r *http.Request) {
+
 	err := json.NewEncoder(w).Encode(repository.GetRepository().GetAllTasksByID()) //we use the writer and write the "items"
 	if err != nil {
 		log.Printf("Body encoding error, %v", err)
@@ -82,6 +90,7 @@ func CreateNewTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
+
 	var t model.Task
 	err := json.NewDecoder(r.Body).Decode(&t)
 	if err != nil {
@@ -102,6 +111,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
+
 	var t model.Task
 	err := json.NewDecoder(r.Body).Decode(&t) //we decode the request body from byte format to JSON, in order to satisfy the interface followed by t
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 
 func TestInitRepo(t *testing.T) {
 
-	InitLocalRepo()
+	//InitLocalRepo()
 
 	assert.Equal(t, 1, tasks.indice, "The two lenghts should be equal")
 }
