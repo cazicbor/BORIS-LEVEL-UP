@@ -41,7 +41,9 @@ func (mh *MongoHandler) GetTaskByID(id int) (*model.Task, error) {
 	var task *model.Task
 
 	collection := mh.client.Database(mh.database).Collection(CollectionName)
+
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
 	filter := bson.M{"id": id}
 
 	err := collection.FindOne(ctx, filter).Decode(task)
@@ -55,6 +57,7 @@ func (mh *MongoHandler) GetTaskByID(id int) (*model.Task, error) {
 func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
 
 	collection := mh.client.Database(mh.database).Collection(CollectionName)
+
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	cur, err := collection.Find(ctx, bson.M{})
 
@@ -97,7 +100,7 @@ func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 
 	collection := mh.client.Database(mh.database).Collection(CollectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	filter := bson.M{"id": t.ID}
+	filter := bson.M{"_id": t.ID}
 
 	task := collection.FindOne(ctx, filter)
 
@@ -105,8 +108,8 @@ func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ID not found")
 	}
-
-	return update, nil //ici convertir update en *model.Task, COMMENT FAIRE PUTAIN
+	t.ID = update.UpsertedID.(int)
+	return t, nil //ici convertir update en *model.Task, COMMENT FAIRE PUTAIN
 }
 
 func (mh *MongoHandler) DeleteTaskByID(id int) error {
