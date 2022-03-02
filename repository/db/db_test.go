@@ -18,7 +18,8 @@ const TaskCollection = "task"
 
 type MongoHandlerSuite struct {
 	suite.Suite
-	db *mongo.Database
+	taskStore repository.RepositoryProvider
+	db        *mongo.Database
 }
 
 func (s *MongoHandlerSuite) SetupSuite() { //here we run everything that is "global", common to each test
@@ -63,7 +64,7 @@ func (s *MongoHandlerSuite) TestGetTaskByID() {
 	assert.Nil(s.T(), err)
 
 	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
-	result, err := repository.GetRepository().GetTaskByID(testTask.ID) //à corriger
+	result, err := s.taskStore.GetTaskByID(testTask.ID) //à corriger
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), testTask, result)
 

@@ -11,7 +11,7 @@ var mh *db.MongoHandler
 
 func main() {
 
-	mongoDbConnection := "mongodb://localhost:8080"
+	mongoDbConnection := "mongodb://localhost:27017"
 	mh = db.NewMongoRepo(mongoDbConnection)
 	//r := db.InitDBRepo()
 	//repository.InitRepository(r) //init the repo with data
