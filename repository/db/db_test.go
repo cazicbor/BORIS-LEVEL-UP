@@ -3,11 +3,16 @@ package db
 import (
 	"testing"
 
-	"github.com/cazicbor/BORIS_LEVEL_UP/model"
-	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
+	"github.com/stretchr/testify/suite"
 )
+
+type DbTestSuite struct {
+	suite.Suite
+}
+
+func TestDbTestSuite(t *testing.T) {
+	suite.Run(t, new(DbTestSuite))
+}
 
 func TestNewHandler(t *testing.T) {
 
@@ -15,7 +20,7 @@ func TestNewHandler(t *testing.T) {
 
 func TestGetTaskByID(t *testing.T) {
 
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	/* mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
 
 	mt.Run("success", func(mt *mtest.T) {
@@ -38,12 +43,12 @@ func TestGetTaskByID(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, &expectedData, taskResponse)
-	})
+	}) */
 }
 
 func TestGetAllTasksByID(t *testing.T) {
 
-	var sliceTestTasks []*model.Task
+	/*var sliceTestTasks []*model.Task
 
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
@@ -63,7 +68,7 @@ func TestGetAllTasksByID(t *testing.T) {
 			Status:      "test2",
 		}
 
-		/*first := mtest.CreateCursorResponse(1, "foo.bar", mtest.FirstBatch, bson.D{
+		first := mtest.CreateCursorResponse(1, "foo.bar", mtest.FirstBatch, bson.D{
 			{"id", firstExpectedData.ID},
 			{"description", firstExpectedData.Description},
 			{"deadline", firstExpectedData.Deadline},
@@ -81,30 +86,17 @@ func TestGetAllTasksByID(t *testing.T) {
 		mt.AddMockResponses(first, second, killCursors)
 
 		tasks, err :=
-		*/
-	})
+	*/
+
 }
 
 func TestAddTaskToDB(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
 
-	mt.Run("success", func(mt *mtest.T) {
-	})
 }
 
 func TestUpdateTaskByID(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
 
-	mt.Run("success", func(mt *mtest.T) {
-	})
 }
 
 func TestDeleteTaskByID(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
-
-	mt.Run("success", func(mt *mtest.T) {
-	})
 }
