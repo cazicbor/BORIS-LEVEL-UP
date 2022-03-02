@@ -63,7 +63,7 @@ func (s *MongoHandlerSuite) TestGetTaskByID() {
 	assert.Nil(s.T(), err)
 
 	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
-	result, err := s.NewMongoRepo().GetTaskByID(insert.InsertedID.(primitive.ObjectID).Hex()) //à corriger
+	result, err := repository.GetRepository().GetTaskByID(testTask.ID) //à corriger
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), testTask, result)
 
@@ -91,7 +91,7 @@ func (s *MongoHandlerSuite) TestGetAllTasksByID() {
 	_, err = s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask2)
 	assert.Nil(s.T(), err)
 
-	slice, err := s.NewMongoRepo().GetAllTasksByID() //à corriger
+	slice := repository.GetRepository().GetAllTasksByID() //à corriger
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 2, len(slice))
 
@@ -109,13 +109,14 @@ func (s *MongoHandlerSuite) TestAddTaskToDB() {
 
 	var result *model.Task
 
-	id, err := s.NewMongoRepo().AddTaskToDB(testTask) //à corriger
+	task, err := repository.GetRepository().AddTaskToDB(testTask) //à corriger
+	assert.Nil(s.T(), err)
+	IDToString := strconv.Itoa(task.ID)
+
+	objectID, err := primitive.ObjectIDFromHex(IDToString)
 	assert.Nil(s.T(), err)
 
-	objectID, err := primitive.ObjectIDFromHex(id)
-	assert.Nil(s.T(), err)
-
-	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: objectID}}).Decode(result)
+	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: objectID}}).Decode(result) //bson.D == slice
 	assert.Nil(s.T(), err)
 }
 
@@ -139,12 +140,12 @@ func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 	//insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
 	//assert.Nil(s.T(), err)
 
-	res, err := s.UpdateTaskByID(updatedTask)
+	res, err := repository.GetRepository().UpdateTaskByID(updatedTask)
 	assert.NotNil(s.T(), res)
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), updatedTask, res)
 
-	res, err = s.UpdateTaskByID(&model.Task{ID: 10})
+	res, err = repository.GetRepository().UpdateTaskByID(&model.Task{ID: 10})
 	assert.NotNil(s.T(), err)
 	assert.ErrorIs(s.T(), err, repository.ErrNotFound)
 	assert.Nil(s.T(), res)
@@ -164,7 +165,9 @@ func (s *MongoHandlerSuite) TestDeleteTaskByID() {
 	insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
 
-	err = s.NewMongoRepo().DeleteTaskByID(insert.InsertedID.(primitive.ObjectID).Hex()) //à corriger
+	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
+
+	err = repository.GetRepository().DeleteTaskByID(testTask.ID) //à corriger
 	assert.Nil(s.T(), err)
 
 	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: insert.InsertedID.(primitive.ObjectID)}}).Decode(result)
