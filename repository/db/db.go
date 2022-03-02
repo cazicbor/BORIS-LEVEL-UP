@@ -110,7 +110,7 @@ func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 	}
 
 	t.ID = update.UpsertedID.(int)
-	return t, nil //ici convertir update en *model.Task, COMMENT FAIRE PUTAIN
+	return t, nil
 }
 
 func (mh *MongoHandler) DeleteTaskByID(id int) error {

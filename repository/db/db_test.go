@@ -6,12 +6,15 @@ import (
 	"testing"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
+	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+const TaskCollection = "task"
 
 type MongoHandlerSuite struct {
 	suite.Suite
@@ -34,6 +37,7 @@ func (s *MongoHandlerSuite) SetupTest() {
 
 //TearDownSuite disconnects from db
 func (s *MongoHandlerSuite) TearDownSuite() {
+
 	err := s.db.Client().Disconnect(context.TODO())
 	if err != nil {
 		s.T().Fatal(err)
@@ -41,6 +45,7 @@ func (s *MongoHandlerSuite) TearDownSuite() {
 }
 
 func TestMongoRepoSuite(t *testing.T) {
+
 	s := new(MongoHandlerSuite)
 	suite.Run(t, s)
 }
@@ -53,10 +58,12 @@ func (s *MongoHandlerSuite) TestGetTaskByID() {
 		Deadline:    "test1",
 		Status:      "test1",
 	}
+
 	insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
+
 	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
-	result, err := s.GetTaskByID(insert.InsertedID.(primitive.ObjectID).Hex()) //à corriger
+	result, err := s.NewMongoRepo().GetTaskByID(insert.InsertedID.(primitive.ObjectID).Hex()) //à corriger
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), testTask, result)
 
@@ -80,16 +87,18 @@ func (s *MongoHandlerSuite) TestGetAllTasksByID() {
 
 	_, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask1)
 	assert.Nil(s.T(), err)
+
 	_, err = s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask2)
 	assert.Nil(s.T(), err)
 
-	slice, err := s.db.GetAllTasksByID()
+	slice, err := s.NewMongoRepo().GetAllTasksByID() //à corriger
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 2, len(slice))
 
 }
 
 func (s *MongoHandlerSuite) TestAddTaskToDB() {
+
 	//items to be tested: we need to init db with data : tests can't be done without data!
 	testTask := &model.Task{
 		ID:          1,
@@ -97,16 +106,48 @@ func (s *MongoHandlerSuite) TestAddTaskToDB() {
 		Deadline:    "test1",
 		Status:      "test1",
 	}
+
 	var result *model.Task
-	id, err := s.db.AddTaskToDB(testTask) //à corriger
+
+	id, err := s.NewMongoRepo().AddTaskToDB(testTask) //à corriger
 	assert.Nil(s.T(), err)
+
 	objectID, err := primitive.ObjectIDFromHex(id)
-	err := s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: objectID}}).Decode(result)
+	assert.Nil(s.T(), err)
+
+	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: objectID}}).Decode(result)
 	assert.Nil(s.T(), err)
 }
 
 func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 
+	//items to be tested
+	testTask := &model.Task{
+		ID:          1,
+		Description: "test1",
+		Deadline:    "test1",
+		Status:      "test1",
+	}
+
+	updatedTask := &model.Task{
+		ID:          testTask.ID,
+		Description: "testupdate",
+		Deadline:    "testupdate",
+		Status:      "testupdate",
+	}
+
+	//insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
+	//assert.Nil(s.T(), err)
+
+	res, err := s.UpdateTaskByID(updatedTask)
+	assert.NotNil(s.T(), res)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), updatedTask, res)
+
+	res, err = s.UpdateTaskByID(&model.Task{ID: 10})
+	assert.NotNil(s.T(), err)
+	assert.ErrorIs(s.T(), err, repository.ErrNotFound)
+	assert.Nil(s.T(), res)
 }
 
 func (s *MongoHandlerSuite) TestDeleteTaskByID() {
@@ -117,11 +158,15 @@ func (s *MongoHandlerSuite) TestDeleteTaskByID() {
 		Deadline:    "test1",
 		Status:      "test1",
 	}
+
 	var result *model.Task
-	insert, err := s.db.collection(TaskCollection).InsertOne(context.TODO(), testTask)
+
+	insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
-	err = s.DeleteTaskByID(insert.InsertedID.(primitive.ObjectID).Hex())
+
+	err = s.NewMongoRepo().DeleteTaskByID(insert.InsertedID.(primitive.ObjectID).Hex()) //à corriger
 	assert.Nil(s.T(), err)
+
 	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: insert.InsertedID.(primitive.ObjectID)}}).Decode(result)
 	assert.ErrorIs(s.T(), err, mongo.ErrNoDocuments)
 }
