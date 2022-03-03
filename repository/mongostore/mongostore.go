@@ -22,7 +22,7 @@ type MongoHandler struct {
 }
 
 //MongoHandler Constructor, to init the repo
-func NewMongoRepo(address string) *MongoHandler {
+func NewMongoStore(address string) *MongoHandler {
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 

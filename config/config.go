@@ -2,7 +2,6 @@ package config
 
 var config *Configuration
 
-//Configuration configration struct
 type Configuration struct {
 	Server ServerConfiguration
 	DB     DBConfiguration
@@ -21,6 +20,10 @@ type DBConfiguration struct {
 	MongoDBPwd   string `json:"mongodbpwd" mapstructure:"DB_USER_PASSWORD"`
 	MongoDBHost  string `json:"mongodbhost" mapstructure:"DB_HOST"`
 	MongoDBPort  string `json:"mongodbport" mapstructure:"DB_HOST_PORT"`
+}
+
+func SetUp(configFilePath string) {
+
 }
 
 func GetConfig() *Configuration {

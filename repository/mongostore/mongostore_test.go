@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/cazicbor/BORIS_LEVEL_UP/db"
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
 	"github.com/stretchr/testify/assert"
@@ -24,8 +25,7 @@ type MongoHandlerSuite struct {
 
 func (s *MongoHandlerSuite) SetupSuite() { //here we run everything that is "global", common to each test
 	initEnvTest()
-	//ici mettre fonction qui init l'environnement
-	//...
+	store := NewMongoStore(db.GetDB().Collection(TaskCollection))
 }
 
 //SetupTest runs before every unit test, in order to "clean" the DB, not to write over existing data
