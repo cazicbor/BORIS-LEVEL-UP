@@ -1,5 +1,11 @@
 package config
 
+import (
+	"log"
+
+	"github.com/spf13/viper"
+)
+
 var config *Configuration
 
 type Configuration struct {
@@ -10,7 +16,7 @@ type Configuration struct {
 type ServerConfiguration struct {
 	Addr string `json:"adrr" mapstructure:"SERVER_ADDRESS"`
 	Port string `json:"adrr" mapstructure:"SERVER_PORT"`
-	Mode string `json:"adrr" mapstructure:"SERVER_ADDRESS"`
+	Mode string `json:"adrr" mapstructure:"SERVER_MODE"`
 }
 
 type DBConfiguration struct {
@@ -23,7 +29,25 @@ type DBConfiguration struct {
 }
 
 func SetUp(configFilePath string) {
+	viper.AddConfigPath(configFilePath)
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
 
+	viper.AutomaticEnv()
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Fatal("configuration not found")
+		} else {
+			log.Fatalf("%s", err)
+		}
+	}
+
+	err = viper.Unmarshal(&config)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
 }
 
 func GetConfig() *Configuration {
