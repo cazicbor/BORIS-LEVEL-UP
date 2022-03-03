@@ -23,7 +23,7 @@ type MongoHandlerSuite struct {
 }
 
 func (s *MongoHandlerSuite) SetupSuite() { //here we run everything that is "global", common to each test
-	//ici mettre fonction qui init l'environnement : NewMongoRepo, quid de address ?
+	//ici mettre fonction qui init l'environnement
 	//...
 }
 
