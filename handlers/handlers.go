@@ -9,11 +9,11 @@ import (
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
-	"github.com/cazicbor/BORIS_LEVEL_UP/repository/db"
+	"github.com/cazicbor/BORIS_LEVEL_UP/repository/mongostore"
 	"github.com/go-chi/chi"
 )
 
-var mh *db.MongoHandler
+var mh *mongostore.MongoHandler
 
 //handlers
 func HandleRequests() {
