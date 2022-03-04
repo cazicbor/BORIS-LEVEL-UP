@@ -2,37 +2,32 @@ package mongostore
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"log"
-	"time"
+	"strconv"
 
+	"github.com/cazicbor/BORIS_LEVEL_UP/db"
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const DefaultDatabase = "todolist"
 
-const CollectionName = "task"
+const collectionName = "task"
 
 type MongoHandler struct {
-	client   *mongo.Client
-	database string
+	C *mongo.Collection
 }
 
 //MongoHandler Constructor, to init the repo
-func NewMongoStore(address string) *MongoHandler {
-
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-
-	cl, _ := mongo.Connect(ctx, options.Client().ApplyURI(address))
-
+func NewMongoTaskStore() *MongoHandler {
+	db := db.GetDB()
 	mh := &MongoHandler{
-		client:   cl,
-		database: DefaultDatabase,
+		C: db.Collection(collectionName),
 	}
-
 	return mh
 }
 
@@ -40,15 +35,22 @@ func (mh *MongoHandler) GetTaskByID(id int) (*model.Task, error) {
 
 	var task *model.Task
 
-	collection := mh.client.Database(mh.database).Collection(CollectionName)
+	stringID := strconv.Itoa(id)
+	hxID := hex.EncodeToString([]byte(stringID))
 
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-
-	filter := bson.M{"id": id}
-
-	err := collection.FindOne(ctx, filter).Decode(task)
+	objectId, err := primitive.ObjectIDFromHex(hxID)
 	if err != nil {
-		fmt.Errorf("ID not found")
+		log.Fatal(err)
+	}
+	fmt.Println(objectId)
+
+	filter := bson.M{
+		"_id": objectId,
+	}
+
+	err = mh.C.FindOne(context.TODO(), filter).Decode(task)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return task, nil
@@ -56,20 +58,17 @@ func (mh *MongoHandler) GetTaskByID(id int) (*model.Task, error) {
 
 func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
 
-	collection := mh.client.Database(mh.database).Collection(CollectionName)
-
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	cur, err := collection.Find(ctx, bson.M{})
+	cur, err := mh.C.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer cur.Close(ctx)
+	defer cur.Close(context.TODO())
 
 	var sliceTasks []*model.Task
 
-	for cur.Next(ctx) {
+	for cur.Next(context.TODO()) {
 		task := &model.Task{}
 		err := cur.Decode(task)
 
@@ -85,26 +84,23 @@ func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
 
 func (mh *MongoHandler) AddTaskToDB(t *model.Task) (*model.Task, error) {
 
-	collection := mh.client.Database(mh.database).Collection(CollectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-
-	result, err := collection.InsertOne(ctx, t)
+	result, err := mh.C.InsertOne(context.TODO(), t)
 	if err != nil {
 		log.Fatal(err)
 	}
-	t.ID = result.InsertedID.(int)
+	t.ID, _ = strconv.Atoi(result.InsertedID)
 	return t, err
 }
 
 func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 
-	collection := mh.client.Database(mh.database).Collection(CollectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	filter := bson.M{"_id": t.ID}
+	filter := bson.M{
+		"_id": t.ID,
+	}
 
-	task := collection.FindOne(ctx, filter)
+	task := mh.C.FindOne(context.TODO(), filter)
 
-	update, err := collection.UpdateOne(ctx, filter, task)
+	update, err := mh.C.UpdateOne(context.TODO(), filter, task)
 	if err != nil {
 		return nil, fmt.Errorf("ID not found")
 	}
@@ -115,11 +111,11 @@ func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 
 func (mh *MongoHandler) DeleteTaskByID(id int) error {
 
-	collection := mh.client.Database(mh.database).Collection(CollectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	filter := bson.M{"_id": id}
+	filter := bson.M{
+		"_id": id,
+	}
 
-	_, err := collection.DeleteOne(ctx, filter)
+	_, err := mh.C.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return fmt.Errorf("could not delete task : %v", id)
 	}

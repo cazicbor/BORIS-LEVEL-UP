@@ -1,59 +1,46 @@
 package config
 
 import (
+	"encoding/json"
 	"log"
-
-	"github.com/spf13/viper"
+	"os"
 )
 
 var config *Configuration
 
 type Configuration struct {
-	Server ServerConfiguration
-	DB     DBConfiguration
+	Server ServerConfiguration `json:"server"`
+	DB     DBConfiguration     `json:"db"`
 }
 
 type ServerConfiguration struct {
-	Addr string `json:"adrr" mapstructure:"SERVER_ADDRESS"`
-	Port string `json:"adrr" mapstructure:"SERVER_PORT"`
-	Mode string `json:"adrr" mapstructure:"SERVER_MODE"`
+	Addr string `json:"adrr"`
+	Port string `json:"port"`
+	Mode string `json:"mode"` //= test ou pas
 }
 
 type DBConfiguration struct {
-	Database     string `json:"database" mapstructure:"DB_NAME"`
-	TestDatabase string `mapstructure:"DB_NAME_TEST"`
-	MongoDBUser  string `json:"mongodbuser" mapstructure:"DB_USER"`
-	MongoDBPwd   string `json:"mongodbpwd" mapstructure:"DB_USER_PASSWORD"`
-	MongoDBHost  string `json:"mongodbhost" mapstructure:"DB_HOST"`
-	MongoDBPort  string `json:"mongodbport" mapstructure:"DB_HOST_PORT"`
+	Database     string `json:"database"`
+	TestDatabase string `json:"testdatabase"`
+	MongoDBUser  string `json:"mongodbuser"`
+	MongoDBPwd   string `json:"mongodbpwd"`
+	MongoDBHost  string `json:"mongodbhost"`
+	MongoDBPort  string `json:"mongodbport"`
 }
 
 func SetUp(configFilePath string) {
-	viper.AddConfigPath(configFilePath)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	err := viper.ReadInConfig()
+	file, err := os.Open(configFilePath)
 	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatal("configuration not found")
-		} else {
-			log.Fatalf("%s", err)
-		}
+		log.Println(err)
 	}
+	defer file.Close()
 
-	err = viper.Unmarshal(&config)
+	err = json.NewDecoder(file).Decode(&config)
 	if err != nil {
-		log.Fatalf("%s", err)
+		log.Println(err)
 	}
 }
 
 func GetConfig() *Configuration {
 	return config
-}
-
-func (conf *Configuration) SetTestMod() {
-	conf.DB.Database = conf.DB.TestDatabase
 }

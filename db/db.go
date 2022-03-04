@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -25,12 +26,13 @@ func SetUpDB() {
 		usr = configuration.DB.MongoDBUser + ":" + configuration.DB.MongoDBPwd
 	}
 	mongoURI := "mongodb://" + usr + "@" + configuration.DB.MongoDBHost + ":" + configuration.DB.MongoDBPort
+	fmt.Println(mongoURI)
 	Client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatalf("[InitDB] : %s\n", err)
 	}
 	//TODO cancel func
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	err = Client.Connect(ctx)
 	if err != nil {
 		log.Fatalf("[InitDB] : %s\n", err)

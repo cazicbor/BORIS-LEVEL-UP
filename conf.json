@@ -1,0 +1,17 @@
+{
+    "server" :
+    {
+        "adrr": "localhost",
+        "port": "8080",
+        "mode": ""},
+    "db":
+    {
+        "database": "tasks",
+        "testdatabase": "tasks_test",
+        "mongodbuser": "root",
+        "mongodbpwd": "root",
+        "mongodbhost": "127.0.0.1",
+        "mongodbport": "27017"
+    }
+
+}

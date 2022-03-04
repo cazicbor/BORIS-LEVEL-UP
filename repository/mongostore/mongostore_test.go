@@ -2,6 +2,7 @@ package mongostore
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -15,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const TaskCollection = "task"
+const taskCollection = "task"
 
 type MongoHandlerSuite struct {
 	suite.Suite
@@ -25,7 +26,9 @@ type MongoHandlerSuite struct {
 
 func (s *MongoHandlerSuite) SetupSuite() { //here we run everything that is "global", common to each test
 	initEnvTest()
-	store := NewMongoStore(db.GetDB().Collection(TaskCollection))
+	store := NewMongoTaskStore()
+	s.taskStore = store
+	s.db = db.GetDB()
 }
 
 //SetupTest runs before every unit test, in order to "clean" the DB, not to write over existing data
@@ -47,7 +50,6 @@ func (s *MongoHandlerSuite) TearDownSuite() {
 }
 
 func TestMongoRepoSuite(t *testing.T) {
-
 	s := new(MongoHandlerSuite)
 	suite.Run(t, s)
 }
@@ -60,14 +62,16 @@ func (s *MongoHandlerSuite) TestGetTaskByID() {
 		Deadline:    "test1",
 		Status:      "test1",
 	}
+	fmt.Println(testTask)
 
-	insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
+	insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
 
 	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
-	result, err := s.taskStore.GetTaskByID(testTask.ID) //à corriger
+	result, err := s.taskStore.GetTaskByID(testTask.ID)
+	fmt.Println(result)
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), testTask, result)
+	assert.Equal(s.T(), testTask, result, "The two tasks should be the same")
 
 }
 
@@ -87,13 +91,13 @@ func (s *MongoHandlerSuite) TestGetAllTasksByID() {
 		Status:      "test2",
 	}
 
-	_, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask1)
+	_, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask1)
 	assert.Nil(s.T(), err)
 
-	_, err = s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask2)
+	_, err = s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask2)
 	assert.Nil(s.T(), err)
 
-	slice := s.taskStore.GetAllTasksByID() //à corriger
+	slice := s.taskStore.GetAllTasksByID()
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 2, len(slice))
 
@@ -109,16 +113,21 @@ func (s *MongoHandlerSuite) TestAddTaskToDB() {
 		Status:      "test1",
 	}
 
-	var result *model.Task
-
-	task, err := s.taskStore.AddTaskToDB(testTask) //à corriger
+	task, err := s.taskStore.AddTaskToDB(testTask)
+	fmt.Println(task)
 	assert.Nil(s.T(), err)
 	IDToString := strconv.Itoa(task.ID)
 
 	objectID, err := primitive.ObjectIDFromHex(IDToString)
 	assert.Nil(s.T(), err)
 
-	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: objectID}}).Decode(result) //bson.D == slice
+	filter := bson.D{
+		primitive.E{
+			Key:   "_id",
+			Value: objectID,
+		},
+	}
+	err = s.db.Collection(taskCollection).FindOne(context.TODO(), filter).Decode(&task) //bson.D == slice
 	assert.Nil(s.T(), err)
 }
 
@@ -139,7 +148,7 @@ func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 		Status:      "testupdate",
 	}
 
-	//insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
+	//insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
 	//assert.Nil(s.T(), err)
 
 	res, err := s.taskStore.UpdateTaskByID(updatedTask)
@@ -164,14 +173,20 @@ func (s *MongoHandlerSuite) TestDeleteTaskByID() {
 
 	var result *model.Task
 
-	insert, err := s.db.Collection(TaskCollection).InsertOne(context.TODO(), testTask)
+	insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
 
 	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
 
-	err = s.taskStore.DeleteTaskByID(testTask.ID) //à corriger
+	err = s.taskStore.DeleteTaskByID(testTask.ID)
 	assert.Nil(s.T(), err)
 
-	err = s.db.Collection(TaskCollection).FindOne(context.TODO(), bson.D{primitive.E{Key: "_id", Value: insert.InsertedID.(primitive.ObjectID)}}).Decode(result)
+	filter := bson.D{
+		primitive.E{
+			Key:   "_id",
+			Value: insert.InsertedID.(primitive.ObjectID),
+		},
+	}
+	err = s.db.Collection(taskCollection).FindOne(context.TODO(), filter).Decode(result)
 	assert.ErrorIs(s.T(), err, mongo.ErrNoDocuments)
 }
