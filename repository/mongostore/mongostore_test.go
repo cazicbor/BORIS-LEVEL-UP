@@ -54,27 +54,26 @@ func TestMongoRepoSuite(t *testing.T) {
 }
 
 func (s *MongoHandlerSuite) TestGetTaskByID() {
-	//items to be tested
+
 	testTask := &model.Task{
 		ID:          primitive.NewObjectID(),
 		Description: "test1",
 		Deadline:    "test1",
 		Status:      "test1",
 	}
-
+	fmt.Println(testTask)
 	insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
-	fmt.Println(err)
 
 	testTask.ID = insert.InsertedID.(primitive.ObjectID).Hex()
 	result, err := s.taskStore.GetTaskByID(insert.InsertedID.(primitive.ObjectID).Hex())
+	fmt.Println(result)
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), testTask, result)
 }
 
 func (s *MongoHandlerSuite) TestGetAllTasksByID() {
 
-	//items to be tested
 	testTask1 := &model.Task{
 		ID:          primitive.NewObjectID(),
 		Description: "test1",
@@ -93,7 +92,6 @@ func (s *MongoHandlerSuite) TestGetAllTasksByID() {
 
 func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 
-	//items to be tested
 	testTask := &model.Task{
 		ID:          primitive.NewObjectID(),
 		Description: "test1",
@@ -148,7 +146,6 @@ func (s *MongoHandlerSuite) TestDeleteTaskByID() {
 
 func (s *MongoHandlerSuite) TestAddTaskToDB() {
 
-	//items to be tested: we need to init db with data : tests can't be done without data!
 	testTask := &model.Task{
 		ID:          primitive.NewObjectID(),
 		Description: "test1",

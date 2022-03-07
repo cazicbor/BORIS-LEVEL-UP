@@ -46,22 +46,6 @@ func (mh *MongoHandler) GetTaskByID(id string) (*model.Task, error) { //OK
 
 	task.ID = task.ID.(primitive.ObjectID).Hex()
 
-	/* stringID := strconv.Itoa(id)
-	hxID := hex.EncodeToString([]byte(stringID))
-
-	objectId, err := primitive.ObjectIDFromHex(hxID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(objectId)
-
-
-
-	err = mh.C.FindOne(context.TODO(), filter).Decode(task)
-	if err != nil {
-		log.Fatal(err)
-	} */
-
 	return task, err
 }
 
@@ -101,13 +85,6 @@ func (mh *MongoHandler) AddTaskToDB(t *model.Task) (*model.Task, error) {
 	}
 	return nil, err
 
-	/* insert, err := mh.C.InsertOne(context.TODO(), t)
-	res := mh.C.insert.Decode(task)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	return res, err */
 }
 
 func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
