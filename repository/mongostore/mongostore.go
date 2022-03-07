@@ -2,10 +2,8 @@ package mongostore
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/db"
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
@@ -31,11 +29,24 @@ func NewMongoTaskStore() *MongoHandler {
 	return mh
 }
 
-func (mh *MongoHandler) GetTaskByID(id int) (*model.Task, error) {
+func (mh *MongoHandler) GetTaskByID(id string) (*model.Task, error) { //OK
 
 	var task *model.Task
 
-	stringID := strconv.Itoa(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return task, err
+	}
+
+	filter := bson.M{
+		"_id": objectID,
+	}
+
+	err = mh.C.FindOne(context.TODO(), filter).Decode(task)
+
+	task.ID = task.ID.(primitive.ObjectID).Hex()
+
+	/* stringID := strconv.Itoa(id)
 	hxID := hex.EncodeToString([]byte(stringID))
 
 	objectId, err := primitive.ObjectIDFromHex(hxID)
@@ -44,16 +55,14 @@ func (mh *MongoHandler) GetTaskByID(id int) (*model.Task, error) {
 	}
 	fmt.Println(objectId)
 
-	filter := bson.M{
-		"_id": objectId,
-	}
+
 
 	err = mh.C.FindOne(context.TODO(), filter).Decode(task)
 	if err != nil {
 		log.Fatal(err)
-	}
+	} */
 
-	return task, nil
+	return task, err
 }
 
 func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
@@ -84,12 +93,21 @@ func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
 
 func (mh *MongoHandler) AddTaskToDB(t *model.Task) (*model.Task, error) {
 
-	result, err := mh.C.InsertOne(context.TODO(), t)
+	t.ID = primitive.NewObjectID()
+
+	_, err := mh.C.InsertOne(context.TODO(), t)
 	if err != nil {
 		log.Fatal(err)
 	}
-	t.ID, _ = strconv.Atoi(result.InsertedID)
-	return t, err
+	return nil, err
+
+	/* insert, err := mh.C.InsertOne(context.TODO(), t)
+	res := mh.C.insert.Decode(task)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return res, err */
 }
 
 func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
@@ -109,7 +127,7 @@ func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 	return t, nil
 }
 
-func (mh *MongoHandler) DeleteTaskByID(id int) error {
+func (mh *MongoHandler) DeleteTaskByID(id string) error {
 
 	filter := bson.M{
 		"_id": id,
@@ -120,5 +138,5 @@ func (mh *MongoHandler) DeleteTaskByID(id int) error {
 		return fmt.Errorf("could not delete task : %v", id)
 	}
 
-	return nil
+	return err
 }

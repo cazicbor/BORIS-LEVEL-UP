@@ -56,10 +56,10 @@ func (repo *localTasks) AddTaskToDB(t *model.Task) (*model.Task, error) {
 }
 
 func (repo *localTasks) UpdateTaskByID(t *model.Task) (*model.Task, error) {
-	if _, ok := tasks.db[indice(t.ID)]; !ok {
+	if _, ok := tasks.db[indice(t.ID.(int))]; !ok {
 		return nil, repository.ErrNotFound
 	}
-	tasks.db[indice(t.ID)] = t
+	tasks.db[indice(t.ID.(int))] = t
 	return t, nil
 }
 

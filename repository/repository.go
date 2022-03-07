@@ -8,10 +8,10 @@ import (
 
 type RepositoryProvider interface {
 	GetAllTasksByID() []*model.Task
-	GetTaskByID(id int) (*model.Task, error)
+	GetTaskByID(id string) (*model.Task, error)
 	AddTaskToDB(t *model.Task) (*model.Task, error)
 	UpdateTaskByID(t *model.Task) (*model.Task, error)
-	DeleteTaskByID(id int) error
+	DeleteTaskByID(id string) error
 }
 
 var ( //custom errors

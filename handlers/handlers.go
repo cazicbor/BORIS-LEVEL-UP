@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
 	"github.com/cazicbor/BORIS_LEVEL_UP/repository/mongostore"
 	"github.com/go-chi/chi"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var mh *mongostore.MongoHandler
@@ -43,8 +43,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error")
 		return
 	}
-	idToInt, _ := strconv.Atoi(id)
-	task, err := repository.GetRepository().GetTaskByID(idToInt)
+	task, err := repository.GetRepository().GetTaskByID(id)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -118,7 +117,8 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	err = repository.GetRepository().DeleteTaskByID(t.ID)
+	id := t.ID.(primitive.ObjectID).Hex()
+	err = repository.GetRepository().DeleteTaskByID(id)
 	if err == repository.ErrNotFound {
 		w.WriteHeader((http.StatusBadRequest))
 		return

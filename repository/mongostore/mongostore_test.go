@@ -3,7 +3,6 @@ package mongostore
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/db"
@@ -57,85 +56,46 @@ func TestMongoRepoSuite(t *testing.T) {
 func (s *MongoHandlerSuite) TestGetTaskByID() {
 	//items to be tested
 	testTask := &model.Task{
-		ID:          1,
+		ID:          primitive.NewObjectID(),
 		Description: "test1",
 		Deadline:    "test1",
 		Status:      "test1",
 	}
-	fmt.Println(testTask)
 
 	insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
+	fmt.Println(err)
 
-	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
-	result, err := s.taskStore.GetTaskByID(testTask.ID)
-	fmt.Println(result)
+	testTask.ID = insert.InsertedID.(primitive.ObjectID).Hex()
+	result, err := s.taskStore.GetTaskByID(insert.InsertedID.(primitive.ObjectID).Hex())
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), testTask, result, "The two tasks should be the same")
-
+	assert.Equal(s.T(), testTask, result)
 }
 
 func (s *MongoHandlerSuite) TestGetAllTasksByID() {
 
 	//items to be tested
 	testTask1 := &model.Task{
-		ID:          1,
+		ID:          primitive.NewObjectID(),
 		Description: "test1",
 		Deadline:    "test1",
 		Status:      "test1",
-	}
-	testTask2 := &model.Task{
-		ID:          2,
-		Description: "test2",
-		Deadline:    "test2",
-		Status:      "test2",
 	}
 
 	_, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask1)
 	assert.Nil(s.T(), err)
 
-	_, err = s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask2)
-	assert.Nil(s.T(), err)
-
 	slice := s.taskStore.GetAllTasksByID()
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), 2, len(slice))
+	assert.Equal(s.T(), 1, len(slice))
 
-}
-
-func (s *MongoHandlerSuite) TestAddTaskToDB() {
-
-	//items to be tested: we need to init db with data : tests can't be done without data!
-	testTask := &model.Task{
-		ID:          1,
-		Description: "test1",
-		Deadline:    "test1",
-		Status:      "test1",
-	}
-
-	task, err := s.taskStore.AddTaskToDB(testTask)
-	fmt.Println(task)
-	assert.Nil(s.T(), err)
-	IDToString := strconv.Itoa(task.ID)
-
-	objectID, err := primitive.ObjectIDFromHex(IDToString)
-	assert.Nil(s.T(), err)
-
-	filter := bson.D{
-		primitive.E{
-			Key:   "_id",
-			Value: objectID,
-		},
-	}
-	err = s.db.Collection(taskCollection).FindOne(context.TODO(), filter).Decode(&task) //bson.D == slice
-	assert.Nil(s.T(), err)
 }
 
 func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 
 	//items to be tested
 	testTask := &model.Task{
-		ID:          1,
+		ID:          primitive.NewObjectID(),
 		Description: "test1",
 		Deadline:    "test1",
 		Status:      "test1",
@@ -147,9 +107,6 @@ func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 		Deadline:    "testupdate",
 		Status:      "testupdate",
 	}
-
-	//insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
-	//assert.Nil(s.T(), err)
 
 	res, err := s.taskStore.UpdateTaskByID(updatedTask)
 	assert.NotNil(s.T(), res)
@@ -163,9 +120,9 @@ func (s *MongoHandlerSuite) TestUpdateTaskByID() {
 }
 
 func (s *MongoHandlerSuite) TestDeleteTaskByID() {
-	//items to be tested
+
 	testTask := &model.Task{
-		ID:          1,
+		ID:          primitive.NewObjectID(),
 		Description: "test1",
 		Deadline:    "test1",
 		Status:      "test1",
@@ -176,9 +133,7 @@ func (s *MongoHandlerSuite) TestDeleteTaskByID() {
 	insert, err := s.db.Collection(taskCollection).InsertOne(context.TODO(), testTask)
 	assert.Nil(s.T(), err)
 
-	testTask.ID, _ = strconv.Atoi(insert.InsertedID.(primitive.ObjectID).Hex())
-
-	err = s.taskStore.DeleteTaskByID(testTask.ID)
+	err = s.taskStore.DeleteTaskByID(insert.InsertedID.(primitive.ObjectID).Hex())
 	assert.Nil(s.T(), err)
 
 	filter := bson.D{
@@ -189,4 +144,32 @@ func (s *MongoHandlerSuite) TestDeleteTaskByID() {
 	}
 	err = s.db.Collection(taskCollection).FindOne(context.TODO(), filter).Decode(result)
 	assert.ErrorIs(s.T(), err, mongo.ErrNoDocuments)
+}
+
+func (s *MongoHandlerSuite) TestAddTaskToDB() {
+
+	//items to be tested: we need to init db with data : tests can't be done without data!
+	testTask := &model.Task{
+		ID:          primitive.NewObjectID(),
+		Description: "test1",
+		Deadline:    "test1",
+		Status:      "test1",
+	}
+
+	var task *model.Task
+
+	id, err := s.taskStore.AddTaskToDB(testTask)
+	assert.Nil(s.T(), err)
+	objectID, err := primitive.ObjectIDFromHex(id.ID.(string))
+
+	filter := bson.D{
+		primitive.E{
+			Key:   "_id",
+			Value: objectID,
+		},
+	}
+
+	err = s.db.Collection(taskCollection).FindOne(context.TODO(), filter).Decode(task)
+	assert.Nil(s.T(), err)
+
 }
