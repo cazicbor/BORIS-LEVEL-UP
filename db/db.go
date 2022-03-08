@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -18,7 +17,7 @@ var DB *mongo.Database
 
 //SetUpDB sets up the mongo database with configuration parameters
 func SetUpDB() {
-	var db = DB
+	//var db = DB
 	var usr string
 	configuration := config.GetConfig()
 
@@ -26,7 +25,7 @@ func SetUpDB() {
 		usr = configuration.DB.MongoDBUser + ":" + configuration.DB.MongoDBPwd
 	}
 	mongoURI := "mongodb://" + usr + "@" + configuration.DB.MongoDBHost + ":" + configuration.DB.MongoDBPort
-	fmt.Println(mongoURI)
+
 	Client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatalf("[InitDB] : %s\n", err)
@@ -40,8 +39,13 @@ func SetUpDB() {
 	if err = Client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		log.Fatalf("[InitDB] : %s\n", err)
 	}
-	db = Client.Database(configuration.DB.Database)
-	DB = db
+	if configuration.DB.Mode == "prod" {
+		DB = Client.Database(configuration.DB.Database)
+	} else {
+		//fmt.Println(configuration.DB.Mode)
+		DB = Client.Database(configuration.DB.TestDatabase)
+	}
+
 }
 
 //GetDB returns the DB instance

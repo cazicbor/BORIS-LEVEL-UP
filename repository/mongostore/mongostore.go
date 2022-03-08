@@ -2,34 +2,30 @@ package mongostore
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/db"
 	"github.com/cazicbor/BORIS_LEVEL_UP/model"
+	"github.com/cazicbor/BORIS_LEVEL_UP/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-const DefaultDatabase = "todolist"
-
-const collectionName = "task"
 
 type MongoHandler struct {
 	C *mongo.Collection
 }
 
 //MongoHandler Constructor, to init the repo
-func NewMongoTaskStore() *MongoHandler {
+func NewMongoTaskStore(c string) *MongoHandler {
 	db := db.GetDB()
 	mh := &MongoHandler{
-		C: db.Collection(collectionName),
+		C: db.Collection(c),
 	}
 	return mh
 }
 
-func (mh *MongoHandler) GetTaskByID(id string) (*model.Task, error) { //OK
+func (mh *MongoHandler) GetTaskByID(id string) (*model.Task, error) {
 
 	var task *model.Task
 
@@ -38,13 +34,16 @@ func (mh *MongoHandler) GetTaskByID(id string) (*model.Task, error) { //OK
 		return task, err
 	}
 
-	filter := bson.M{
-		"_id": objectID,
+	filter := bson.D{
+		primitive.E{
+			Key:   "_id",
+			Value: objectID,
+		},
 	}
 
-	err = mh.C.FindOne(context.TODO(), filter).Decode(task)
+	err = mh.C.FindOne(context.TODO(), filter).Decode(&task)
 
-	task.ID = task.ID.(primitive.ObjectID).Hex()
+	task.ID = id
 
 	return task, err
 }
@@ -77,43 +76,47 @@ func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
 
 func (mh *MongoHandler) AddTaskToDB(t *model.Task) (*model.Task, error) {
 
-	t.ID = primitive.NewObjectID()
-
+	id := primitive.NewObjectID()
+	t.ID = id
 	_, err := mh.C.InsertOne(context.TODO(), t)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return nil, err
-
+	t.ID = t.ID.(primitive.ObjectID).Hex()
+	return t, err
 }
 
 func (mh *MongoHandler) UpdateTaskByID(t *model.Task) (*model.Task, error) {
 
-	filter := bson.M{
-		"_id": t.ID,
-	}
-
-	task := mh.C.FindOne(context.TODO(), filter)
-
-	update, err := mh.C.UpdateOne(context.TODO(), filter, task)
+	id, err := primitive.ObjectIDFromHex(t.ID.(string))
 	if err != nil {
-		return nil, fmt.Errorf("ID not found")
+		return nil, err
 	}
-
-	t.ID = update.UpsertedID.(int)
-	return t, nil
-}
-
-func (mh *MongoHandler) DeleteTaskByID(id string) error {
-
+	t.ID = id
 	filter := bson.M{
 		"_id": id,
 	}
 
-	_, err := mh.C.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		return fmt.Errorf("could not delete task : %v", id)
+	old := mh.C.FindOneAndReplace(context.TODO(), filter, t)
+	if old.Err() != nil {
+		return nil, repository.ErrNotFound
 	}
 
+	return t, nil
+}
+
+func (mh *MongoHandler) DeleteTaskByID(id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	filter := bson.D{
+		primitive.E{
+			Key:   "_id",
+			Value: oid,
+		},
+	}
+
+	_, err = mh.C.DeleteOne(context.TODO(), filter)
 	return err
 }

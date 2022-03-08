@@ -1,7 +1,6 @@
 package mongostore
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/cazicbor/BORIS_LEVEL_UP/config"
@@ -11,9 +10,6 @@ import (
 var CONFIGPATH = filepath.Join("BORIS_LEVEL_UP/", "conf.json")
 
 func initEnvTest() {
-
 	config.SetUp("./../../conf.json")
-	conf := config.GetConfig()
-	fmt.Println(conf)
 	db.SetUpDB()
 }

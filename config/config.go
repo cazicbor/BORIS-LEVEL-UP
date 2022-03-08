@@ -26,6 +26,7 @@ type DBConfiguration struct {
 	MongoDBPwd   string `json:"mongodbpwd"`
 	MongoDBHost  string `json:"mongodbhost"`
 	MongoDBPort  string `json:"mongodbport"`
+	Mode         string `json:"mode"`
 }
 
 func SetUp(configFilePath string) {

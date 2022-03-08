@@ -11,7 +11,9 @@
         "mongodbuser": "root",
         "mongodbpwd": "root",
         "mongodbhost": "127.0.0.1",
-        "mongodbport": "27017"
+        "mongodbport": "27017",
+        "mode" : "charles"
     }
+    
 
 }
