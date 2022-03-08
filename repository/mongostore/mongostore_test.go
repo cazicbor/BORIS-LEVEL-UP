@@ -189,8 +189,4 @@ func (s *MongoHandlerSuite) TestAddTaskToDB() {
 	err = s.db.Collection(taskCollection).FindOne(context.TODO(), filter).Decode(&task)
 	assert.Nil(s.T(), err)
 
-	_, err = s.taskStore.AddTaskToDB(&model.Task{ID: "some truc"})
-	assert.NotNil(s.T(), err)
-	assert.ErrorIs(s.T(), err, primitive.ErrInvalidHex)
-
 }

@@ -53,7 +53,7 @@ func (mh *MongoHandler) GetAllTasksByID() []*model.Task {
 	cur, err := mh.C.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
 
 	defer cur.Close(context.TODO())
@@ -80,7 +80,7 @@ func (mh *MongoHandler) AddTaskToDB(t *model.Task) (*model.Task, error) {
 	t.ID = id
 	_, err := mh.C.InsertOne(context.TODO(), t)
 	if err != nil {
-		return nil, err
+		return nil, repository.ErrNotFound
 	}
 	t.ID = t.ID.(primitive.ObjectID).Hex()
 	return t, err
